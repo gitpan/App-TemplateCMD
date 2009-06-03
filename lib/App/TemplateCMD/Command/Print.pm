@@ -10,7 +10,6 @@ use strict;
 use warnings;
 use version;
 use Carp;
-use Scalar::Util;
 use List::MoreUtils qw/uniq/;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
@@ -19,7 +18,7 @@ use Template::Provider;
 use Template::Provider::FromDATA;
 use base qw/App::TemplateCMD::Command/;
 
-our $VERSION     = version->new('0.0.1');
+our $VERSION     = version->new('0.0.2');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 
@@ -79,8 +78,7 @@ App::TemplateCMD::Command::Print - Prints a parsed template out to screen or fil
 
 =head1 VERSION
 
-This documentation refers to App::TemplateCMD::Command::Print version 0.1.
-
+This documentation refers to App::TemplateCMD::Command::Print version 0.0.2.
 
 =head1 SYNOPSIS
 

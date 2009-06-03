@@ -10,15 +10,13 @@ use strict;
 use warnings;
 use version;
 use Carp;
-use Scalar::Util;
-use List::Util;
 use List::MoreUtils qw/uniq/;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 use base qw/App::TemplateCMD::Command/;
 use File::Glob;
 
-our $VERSION     = version->new('0.0.1');
+our $VERSION     = version->new('0.0.2');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 
@@ -121,12 +119,12 @@ __END__
 
 =head1 NAME
 
-App::TemplateCMD::Command::Help - <One-line description of module's purpose>
+App::TemplateCMD::Command::Help - Show help about how to use commands and
+templatecmd in general.
 
 =head1 VERSION
 
-This documentation refers to App::TemplateCMD::Command::Help version 0.1.
-
+This documentation refers to App::TemplateCMD::Command::Help version 0.0.2.
 
 =head1 SYNOPSIS
 

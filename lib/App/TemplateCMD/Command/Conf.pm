@@ -10,14 +10,12 @@ use strict;
 use warnings;
 use version;
 use Carp;
-use Scalar::Util;
-use List::Util;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 use YAML;
 use base qw/App::TemplateCMD::Command/;
 
-our $VERSION     = version->new('0.0.1');
+our $VERSION     = version->new('0.0.2');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 
@@ -55,12 +53,12 @@ __END__
 
 =head1 NAME
 
-App::TemplateCMD::Command::Conf - <One-line description of module's purpose>
+App::TemplateCMD::Command::Conf - Command to show the configuration used for
+templates.
 
 =head1 VERSION
 
-This documentation refers to App::TemplateCMD::Command::Conf version 0.1.
-
+This documentation refers to App::TemplateCMD::Command::Conf version 0.0.2.
 
 =head1 SYNOPSIS
 
@@ -69,7 +67,6 @@ This documentation refers to App::TemplateCMD::Command::Conf version 0.1.
    # Brief but working code example(s) here showing the most common usage(s)
    # This section will be as far as many users bother reading, so make it as
    # educational and exemplary as possible.
-
 
 =head1 DESCRIPTION
 
