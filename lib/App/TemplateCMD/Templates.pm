@@ -10,7 +10,7 @@ use strict;
 use warnings;
 use version;
 
-our $VERSION     = version->new('0.0.2');
+our $VERSION     = version->new('0.0.3');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 
@@ -26,7 +26,7 @@ App::TemplateCMD::Templates - Default templates for templatecmd to use.
 
 =head1 VERSION
 
-This documentation refers to App::TemplateCMD::Templates version 0.0.2.
+This documentation refers to App::TemplateCMD::Templates version 0.0.3.
 
 =head1 SYNOPSIS
 
@@ -718,7 +718,7 @@ elsif (  ) {
 else {
 
 }
-__perl/package.pl__
+__perl/package.pm__
 [% IF not vars %][% vars = [ 'search' ] %][% END -%]
 [% IF not module %][% module = 'Module::Name' %][% END -%]
 package [% module %];
@@ -729,8 +729,12 @@ package [% module %];
 # $Revision$, $HeadURL$, $Date$
 # $Revision$, $Source$, $Date$
 
+[% IF moose -%]
+use Moose;
+[% ELSE -%]
 use strict;
 use warnings;
+[% END -%]
 use version;
 use Carp;
 use Scalar::Util;
@@ -738,13 +742,16 @@ use List::Util;
 #use List::MoreUtils;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
+[% IF !moose -%]
 use base qw/Exporter/;
+[%- END %]
 
 our $VERSION     = version->new('0.0.1');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 #our @EXPORT      = qw//;
 
+[% IF !moose -%]
 sub new {
 	my $caller = shift;
 	my $class  = ref $caller ? ref $caller : $caller;
@@ -755,6 +762,7 @@ sub new {
 
 	return $self;
 }
+[%- END %]
 
 1;
 
@@ -769,7 +777,9 @@ sub new {
 [% INCLUDE perl/pod/DESCRIPTION.pl %]
 [% INCLUDE perl/pod/METHODS.pl %]
 
+[% IF !moose -%]
 [% INCLUDE perl/pod.pl return => module, sub => 'new' -%]
+[% END %]
 
 [% INCLUDE perl/pod/detailed.pl %]
 =head1 AUTHOR
@@ -1136,13 +1146,14 @@ __perl/test.pl__
 [% IF not module %][% module = 'module' %][% END -%]
 [% IF not obj    %][% obj    = 'obj'    %][% END -%]
 [% IF not tests  %][% tests  = 10       %][% END -%]
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 BEGIN { $ENV{TESTING} = 1 }
 
 use strict;
 use warnings;
-use Test::More tests => [% tests %];
+use Test::More tests => [% tests %] + 1;
+use Test::NoWarnings;
 
 my $module = '[% module %]';
 use_ok( $module );
@@ -1171,7 +1182,8 @@ __perl/test/00-load.t__
 
 use strict;
 use warnings;
-use Test::More tests => 1;
+use Test::More tests => 1 + 1;
+use Test::NoWarnings;
 
 BEGIN {
 	use_ok( '[% module %]' );
@@ -1190,7 +1202,8 @@ $stash->set( file => $file );
 
 use strict;
 use warnings;
-use Test::More tests => 3;
+use Test::More tests => 3 + 1;
+use Test::NoWarnings;
 
 sub not_in_file_ok {
     my ($filename, %regex) = @_;
@@ -1242,6 +1255,7 @@ TODO: {
 module_boilerplate_ok('lib/[% file %].pm');
 
 __perl/test/critic.t__
+#!/usr/bin/perl
 
 use strict;
 use warnings;
@@ -1306,6 +1320,13 @@ __perl/test/kwalitee.t__
 use strict;
 use warnings;
 
+if ( not $ENV{TEST_AUTHOR} ) {
+	require Test::More;
+	Test::More->import;
+	my $msg = 'Author test.  Set TEST_AUTHOR environment variable to a true value to run.';
+	plan( skip_all => $msg );
+}
+
 eval { require Test::Kwalitee; Test::Kwalitee->import() };
 
 plan( skip_all => 'Test::Kwalitee not installed; skipping' ) if $@;
@@ -1315,6 +1336,11 @@ __perl/test/pod-coverage.t__
 use strict;
 use warnings;
 use Test::More;
+
+if ( not $ENV{TEST_AUTHOR} ) {
+    my $msg = 'Author test.  Set TEST_AUTHOR environment variable to a true value to run.';
+    plan( skip_all => $msg );
+}
 
 # Ensure a recent version of Test::Pod::Coverage
 my $min_tpc = 1.08;
@@ -1350,9 +1376,26 @@ use strict;
 use warnings;
 use Test::More;
 
+if ( not $ENV{TEST_AUTHOR} ) {
+    my $msg = 'Author test.  Set TEST_AUTHOR environment variable to a true value to run.';
+    plan( skip_all => $msg );
+}
+
+# check that Test::Spelling is installed
 eval { require Test::Spelling; Test::Spelling->import() };
 
-plan skip_all => "Test::Spelling required for testing POD coverage" if $@;
+# now check that the spell command is installed
+my $found;
+for my $dir ( split /:/, $ENV{PATH} ) {
+	next if !-d $dir;
+	next if !-x "$dir/spell";
+
+	$found = 1;
+	last;
+}
+
+plan skip_all => "Test::Spelling required for testing POD spelling" if $@;
+plan skip_all => "spell command required for testing POD spelling" if !$found;
 
 add_stopwords(qw//);
 all_pod_files_spelling_ok();
