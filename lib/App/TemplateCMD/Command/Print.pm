@@ -16,40 +16,71 @@ use English qw/ -no_match_vars /;
 use Template;
 use Template::Provider;
 use Template::Provider::FromDATA;
+use IPC::Open2;
 use base qw/App::TemplateCMD::Command/;
 
-our $VERSION     = version->new('0.0.4');
+our $VERSION     = version->new('0.1.0');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 
 sub process {
-	my ($self, $cmd, %option) = @_;
+    my ($self, $cmd, %option) = @_;
 
-	my $template = shift @{$option{files}};
-	my $args     = { %{ $cmd->config || {} }, %option, %{ $option{args} || {} } };
+    my $template = shift @{$option{files}};
+    my $args     = { %{ $cmd->config || {} }, %option, %{ $option{args} || {} } };
 
-	my $out = '';
-	$cmd->{template}->process( $template, $args, \$out );
+    my $out = '';
+    $cmd->{template}->process( $template, $args, \$out );
 
-	if (!$out) {
-		my @files = uniq sort map {$_->{file}} $cmd->list_templates();
+    if (!$out) {
+        my @files = uniq sort map {$_->{file}} $cmd->list_templates();
 
-		my @templates = grep { m{^$template [.] .+ $}xms } @files;
+        my @templates = grep { m{^$template [.] .+ $}xms } @files;
 
-		if (@templates) {
-			$cmd->{template}->process( $templates[0], $args, \$out );
-		}
-	}
+        if (@templates) {
+            $cmd->{template}->process( $templates[0], $args, \$out );
+        }
+    }
 
-	$out =~ s/^\0=__/__/gxms if $out;
+    $out =~ s/^\0=__/__/gxms if $out;
 
-	return $out;
+    if ( $option{args}{tidy} ) {
+        if ( $option{args}{tidy} eq 'perl' ) {
+            eval { require Perl::Tidy };
+            if ($EVAL_ERROR) {
+                warn "Perl::Tidy is not installed, carn't tidy perl code\n";
+            }
+            else {
+                my $tidied;
+                eval {
+                    local @ARGV;
+                    Perl::Tidy::perltidy( source => \$out, destination => \$tidied );
+                    $out = $tidied;
+                };
+                if ($EVAL_ERROR) {
+                    warn "perltidy errored with: $EVAL_ERROR\n";
+                }
+            }
+        }
+        else {
+            warn "$option{args}{tidy}tidy";
+            my $pid = open2( my $fh_out, my $fh_in, "$option{args}{tidy}tidy" );
+            sleep 1;
+            print {$fh_in} $out;
+            sleep 1;
+            $out = <$fh_out>;
+            waitpid( $pid, 0 );
+            warn "exit status: " . $? >> 8;
+        }
+    }
+
+    return $out;
 }
 
 sub help {
-	my ($self) = @_;
+    my ($self) = @_;
 
-	return <<"HELP";
+    return <<"HELP";
 $0 print [options] template
 
  -a --args=str   Specify arguments to pass on to the template that is to be displayed
@@ -78,7 +109,7 @@ App::TemplateCMD::Command::Print - Prints a parsed template out to screen or fil
 
 =head1 VERSION
 
-This documentation refers to App::TemplateCMD::Command::Print version 0.0.4.
+This documentation refers to App::TemplateCMD::Command::Print version 0.1.0.
 
 =head1 SYNOPSIS
 

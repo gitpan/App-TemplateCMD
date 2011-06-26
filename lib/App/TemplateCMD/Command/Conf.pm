@@ -15,26 +15,26 @@ use English qw/ -no_match_vars /;
 use YAML;
 use base qw/App::TemplateCMD::Command/;
 
-our $VERSION     = version->new('0.0.4');
+our $VERSION     = version->new('0.1.0');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 
 sub process {
-	my ($self, $cmd, %options) = @_;
+    my ($self, $cmd, %options) = @_;
 
-	my $conf = $cmd->config();
+    my $conf = $cmd->config();
 
-	if ($options{verbose}) {
-		print {*STDERR} "Default config is $cmd->{config_default}\n";
-	}
+    if ($options{verbose}) {
+        print {*STDERR} "Default config is $cmd->{config_default}\n";
+    }
 
-	return Dump $conf;
+    return Dump $conf;
 }
 
 sub help {
-	my ($self) = @_;
+    my ($self) = @_;
 
-	return <<"HELP";
+    return <<"HELP";
 $0 conf [options]
 
 Options
@@ -58,7 +58,7 @@ templates.
 
 =head1 VERSION
 
-This documentation refers to App::TemplateCMD::Command::Conf version 0.0.4.
+This documentation refers to App::TemplateCMD::Command::Conf version 0.1.0.
 
 =head1 SYNOPSIS
 

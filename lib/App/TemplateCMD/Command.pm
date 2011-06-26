@@ -14,7 +14,7 @@ use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 use base qw/Exporter/;
 
-our $VERSION     = version->new('0.0.4');
+our $VERSION     = version->new('0.1.0');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 #our @EXPORT      = qw//;
@@ -27,53 +27,53 @@ sub default {
 
 sub get_template {
 
-	my ($self, $template, $cmd) = @_;
+    my ($self, $template, $cmd) = @_;
 
-	# try to get the template directly by name
-	for my $provider (@{ $cmd->{providers} }) {
-		if ($provider->{INCLUDE_PATH}) {
-			for my $path (@{ $provider->{INCLUDE_PATH} }) {
-				my ($data, $error) = $provider->_load( "$path/$template" );
+    # try to get the template directly by name
+    for my $provider (@{ $cmd->{providers} }) {
+        if ($provider->{INCLUDE_PATH}) {
+            for my $path (@{ $provider->{INCLUDE_PATH} }) {
+                my ($data, $error) = $provider->_load( "$path/$template" );
 
-				if ($data->{text}) {
-					# return the found template info
-					return ($data, $provider, $error, [$template]);
-				}
-			}
-		}
-		else {
-			my ($data, $error) = $provider->_load( $template );
+                if ($data->{text}) {
+                    # return the found template info
+                    return ($data, $provider, $error, [$template]);
+                }
+            }
+        }
+        else {
+            my ($data, $error) = $provider->_load( $template );
 
-			if ($data->{text}) {
-				# return the found template info
-				return ($data, $provider, $error, [$template]);
-			}
-		}
+            if ($data->{text}) {
+                # return the found template info
+                return ($data, $provider, $error, [$template]);
+            }
+        }
 
-		if ($cmd->{verbose}) {
-			print "$template was not found with provider " . ( ref $provider ) . "\n";
-		}
-	}
+        if ($cmd->{verbose}) {
+            print "$template was not found with provider " . ( ref $provider ) . "\n";
+        }
+    }
 
-	# now try to get the template assumin it is missing its suffix
-	my @files = map {$_->{file}} $cmd->list_templates();
+    # now try to get the template assumin it is missing its suffix
+    my @files = map {$_->{file}} $cmd->list_templates();
 
-	# get all templates that start with the template name provided
-	my @templates = grep { m{^$template [.] .+ $}xms } @files;
+    # get all templates that start with the template name provided
+    my @templates = grep { m{^$template [.] .+ $}xms } @files;
 
-	if (@templates) {
-		for my $provider (@{ $cmd->{providers} }) {
-			my ($data, $error) = $provider->_load( $templates[0] );
+    if (@templates) {
+        for my $provider (@{ $cmd->{providers} }) {
+            my ($data, $error) = $provider->_load( $templates[0] );
 
-			if ($data->{text}) {
-				# return the found template info
-				return ($data, $provider, $error, \@templates);
-			}
-		}
-	}
+            if ($data->{text}) {
+                # return the found template info
+                return ($data, $provider, $error, \@templates);
+            }
+        }
+    }
 
-	# no template found
-	croak "The template $template was not found!";
+    # no template found
+    croak "The template $template was not found!";
 }
 
 1;
@@ -86,7 +86,7 @@ App::TemplateCMD::Command - The base class for command modules
 
 =head1 VERSION
 
-This documentation refers to App::TemplateCMD::Command version 0.0.4.
+This documentation refers to App::TemplateCMD::Command version 0.1.0.
 
 =head1 SYNOPSIS
 

@@ -16,57 +16,56 @@ use English qw/ -no_match_vars /;
 use Template;
 use Template::Provider;
 use YAML qw/Load/;
+use Path::Class qw/file/;
 use base qw/App::TemplateCMD::Command/;
 
-our $VERSION     = version->new('0.0.4');
+our $VERSION     = version->new('0.1.0');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 
 sub process {
-	my ($self, $cmd, %option) = @_;
+    my ($self, $cmd, %option) = @_;
 
-	my $template = 'build/' . shift @{$option{files}};
-	my $args     = { %{ $cmd->config }, %{ $option{args} || {} } };
+    my $template = 'build/' . shift @{$option{files}};
+    my $args     = { %{ $cmd->config }, %{ $option{args} || {} } };
 
-	my $print = $cmd->load_cmd('print');
-	my $out = $print->process( $cmd, %{ $args }, files => [$template] );
-	die $out;
+    my $print = $cmd->load_cmd('print');
+    my $out = $print->process( $cmd, %{ $args }, files => [$template] );
 
-	my $structure = Load($out);
+    my $structure = Load($out);
 
-	for my $template (%{ $structure }) {
-		warn $template;
-		my $file = $structure->{$template}{file};
+    for my $template (keys %{ $structure }) {
+        my $file = file $structure->{$template}{file};
 
-		if ( !-e $file || $option{force} ) {
-			$self->create_base_dir($file);
-		}
+        if ( !-e $file || $option{force} ) {
+            $file->parent->mkpath();
+        }
 
-		# process the template
-		my $out = $print->process(
-			$cmd,
-			%{ $args },
-			%{ $structure->{$template} },
-			files => [$template]
-		);
-		open my $fh, '>', $file or die "Could not open $file for writing: $!\n";
-		print {$fh} $out;
-		close $fh;
-	}
+        # process the template
+        my $out = $print->process(
+            $cmd,
+            %{ $args },
+            %{ $structure->{$template} },
+            files => [$template]
+        );
+        my $fh = $file->openw;
+        print {$fh} $out;
+        close $fh;
+    }
 
-	return $out;
+    return $out;
 }
 
 sub args {
-	return (
-		'force|f!',
-	);
+    return (
+        'force|f!',
+    );
 }
 
 sub help {
-	my ($self) = @_;
+    my ($self) = @_;
 
-	return <<"HELP";
+    return <<"HELP";
 $0 build [options] build_template
 
 Options
@@ -87,7 +86,7 @@ App::TemplateCMD::Command::Build - Builds a a tree of files from a build templat
 
 =head1 VERSION
 
-This documentation refers to App::TemplateCMD::Command::Build version 0.0.4.
+This documentation refers to App::TemplateCMD::Command::Build version 0.1.0.
 
 =head1 SYNOPSIS
 
