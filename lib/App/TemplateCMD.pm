@@ -18,11 +18,11 @@ use YAML qw/Dump LoadFile/;
 use Readonly;
 use Template;
 use Template::Provider;
-use Template::Provider::FromDATA;
 use Data::Merger qw/merger/;
+use File::ShareDir qw/dist_dir/;
 use base qw/Exporter/;
 
-our $VERSION     = version->new('0.1.1');
+our $VERSION     = version->new('0.5.0');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 
@@ -103,16 +103,6 @@ sub process {
     my $conf = $self->add_args(\%default);
     my $out;
 
-    # find any modules under App::TemplateCMD::Templates
-    my $default = 'App::TemplateCMD::Templates';
-    my @template_modules;
-
-    for my $module ( $self->get_modules($default) ) {
-        $module =~ s{/}{::}gxms;
-        push @template_modules, $default . '::' . $module;
-    }
-    $self->{template_modules} = [ $default, @template_modules ];
-
     my $path = $conf->{path};
     if ( $default{path} ) {
         $path = "$default{path}:$path";
@@ -121,7 +111,6 @@ sub process {
 
     $self->{providers} = [
         Template::Provider->new({ INCLUDE_PATH => $path }),
-        Template::Provider::FromDATA->new({ CLASSES => $self->{template_modules} }),
     ];
 
     $self->{template} = Template->new({
@@ -185,7 +174,7 @@ sub config {
     return $self->{'config'} if $self->{'config'};
 
     my $conf = {
-        path    => '~/template-cmd:~/.template-cmd/:~/.template-cmd-local:/usr/local/template-cmd/src/',
+        path    => '~/template-cmd:~/.template-cmd/:~/.template-cmd-local:/usr/local/template-cmd/src/:' . dist_dir('App-TemplateCMD'),
         aliases => {
             ls  => 'list',
             des => 'describe',
@@ -326,39 +315,6 @@ sub list_templates {
         );
     }
 
-    $self->{providers}[0]->_load('__');
-    if ( $self->{providers}[0]->can('cache') ) {
-        push @files, map {{ file => $_ }} keys %{ $self->{providers}[0]->cache->{templates} };
-    }
-
-    for my $module (@{ $self->{template_modules} }) {
-        my $file = $module;
-        $file =~ s{::}{/}gxms;
-        $file .= '.pm';
-        require $file;
-
-        my $fh;
-        {
-            no strict 'refs';            ## no critic
-            $fh = \*{"${module}\::DATA"};
-        }
-        my $lines = 0;
-
-        LINE:
-        while ( my $line = <$fh> ) {
-            $lines++;
-            my ($template) = $line =~ /^__(.+)__\r?\n/xms;
-            next LINE if !$template;
-            push @files, { path => $module, file => $template };
-        }
-
-        # if no lines read check the provider cache
-        if ( !$lines ) {
-            my $cache = $self->{providers}[1]->{cache}{templates};
-            push @files, map {{ file => $_ }} keys %{ $cache };
-        }
-    }
-
     return @files;
 }
 
@@ -384,7 +340,7 @@ App::TemplateCMD - Sets up an interface to passing Template Toolkit templates
 
 =head1 VERSION
 
-This documentation refers to App::TemplateCMD version 0.1.1.
+This documentation refers to App::TemplateCMD version 0.5.0.
 
 =head1 SYNOPSIS
 

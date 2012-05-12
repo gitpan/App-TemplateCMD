@@ -15,7 +15,6 @@ use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 use Template;
 use Template::Provider;
-use Template::Provider::FromDATA;
 use IPC::Open2;
 use base qw/App::TemplateCMD::Command/;
 
@@ -31,6 +30,7 @@ sub process {
 
     my $out = '';
     $cmd->{template}->process( $template, $args, \$out );
+    warn  $cmd->{template}->error . "\n" if $cmd->{template}->error;
 
     if (!$out) {
         my @files = uniq sort map {$_->{file}} $cmd->list_templates();
@@ -39,6 +39,7 @@ sub process {
 
         if (@templates) {
             $cmd->{template}->process( $templates[0], $args, \$out );
+            warn  $cmd->{template}->error . "\n" if $cmd->{template}->error;
         }
     }
 
