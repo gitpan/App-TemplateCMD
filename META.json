@@ -4,7 +4,7 @@
       "Ivan Wills <ivan.wills@gmail.com>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.112150",
+   "generated_by" : "Module::Build version 0.4001, CPAN::Meta::Converter version 2.110440",
    "license" : [
       "perl_5"
    ],
@@ -22,7 +22,7 @@
       },
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.38"
+            "Module::Build" : "0.40"
          }
       },
       "runtime" : {
@@ -45,7 +45,7 @@
    "provides" : {
       "App::TemplateCMD" : {
          "file" : "lib/App/TemplateCMD.pm",
-         "version" : "v0.5.0"
+         "version" : "v0.5.1"
       },
       "App::TemplateCMD::Command" : {
          "file" : "lib/App/TemplateCMD/Command.pm",
@@ -92,5 +92,5 @@
          "url" : "http://github.com/ivanwills/App-TemplateCMD"
       }
    },
-   "version" : "v0.5.0"
+   "version" : "v0.5.1"
 }
